@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Funds</title>
+    <link rel="stylesheet" href="../css/Send-Money.css">
+    <script src="../js/makeAjaxCall.js"></script>
+</head>
+<body>
+  <button class="back" onclick="_history()">Back</button>
+</body>
+<script>
+  //_history() is for going back 1 page
+  _history=()=>
+  {
+    window.history.go(-1);
+  }
+  //Loding all the required fields for sending money dynamically
+  let userData=JSON.parse(sessionStorage.getItem('userData'))
+   let userId=userData.userId
+   //getting data on the basis of beneficiary userId
+    makeAjaxCall("GET",`http://localhost:3000/users?userId=${userId}`,null,false).then(
+        responseData=>
+        {
+           let obj=JSON.parse(responseData)
+           let beneficiaryData=JSON.parse(sessionStorage.getItem('beneficiaryData'))
+            let beneficiaryName=beneficiaryData.beneficiaryName
+   let acNo=beneficiaryData.acNo
+   let id=beneficiaryData.id
+   let accountType=beneficiaryData.accountType
+   let nickName=beneficiaryData.nickName
+    let container=document.createElement('div') 
+    container.setAttribute("class","container")      
+    let from=document.createElement('div')
+    let to=document.createElement('div')
+    let fromAcNo=document.createElement('h3')
+    let fromAcNoValue=document.createElement('p')
+    let toAcNo=document.createElement('h3')
+    let toAcNoValue=document.createElement('p')
+    from.appendChild(fromAcNo)
+    from.appendChild(fromAcNoValue)
+    to.appendChild(toAcNo)
+    to.appendChild(toAcNoValue)
+    document.body.appendChild(container)
+    container.appendChild(from)
+    container.appendChild(to)
+    let maskedAcNo =userData.maskedAcNo
+   fromAcNo.innerHTML=`From Account Number`   
+   fromAcNoValue.innerHTML=`${maskedAcNo}`
+      toAcNo.innerHTML=`To Account Number` 
+      toAcNoValue.innerHTML=`${acNo}`
+      let amount=document.createElement('h3')
+      let amountValue=document.createElement('input')
+      setAttributes(amountValue,{"type":"Number","value":"0"})
+      container.appendChild(amount)
+      container.appendChild(amountValue)
+      amount.innerHTML=`Amount`
+  let date=document.createElement('h3')
+  container.appendChild(date)
+  date.innerHTML="Date"
+  let dateValue=document.createElement('p')
+  container.appendChild(dateValue)
+  //Getting Today's Date
+let today = new Date();
+let dd = String(today.getDate()).padStart(2, '0');
+let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+let yyyy = today.getFullYear();
+today = mm + '/' + dd + '/' + yyyy;
+dateValue.appendChild(document.createTextNode(today))
+send=document.createElement('button')
+send.innerHTML="SEND"
+container.appendChild(send)
+setAttributes(send,{"onclick":"_send(event)"})
+_send=event=>
+{
+    
+    if(parseInt(obj[0].balance)<amountValue.value)
+    {
+        alert("Not Enough Balance")
+    }
+    else
+    {
+      let amount=document.getElementsByTagName('input')[0].value
+    let debitedBalance=parseInt(obj[0].balance)-parseInt(amount)
+    let creditedBalance=parseInt(amount)
+let randomNumber=()=>
+{
+  return String.fromCharCode(Math.floor(Math.random() * 10) + 48)
+}
+ let transactionId = () => {
+              return Math.random().toString(36).slice(2, 9);
+            }
+      if (confirm("Confirm Send,Your amount will be debited")) {
+        let postObj={userId:obj[0].userId,password:obj[0].password,fullName:obj[0].fullName,
+        acNo:obj[0].acNo,mobileNo:obj[0].mobileNo,debitCard:obj[0].debitCard,
+    creditCard:obj[0].creditCard,balance:debitedBalance}
+    let jsonString=JSON.stringify(postObj)
+  makeAjaxCall("PUT",`http://localhost:3000/users/${obj[0].id}`,jsonString,false)
+   makeAjaxCall("GET",`http://localhost:3000/users?acNo=${acNo}`,null,false).then(
+   responseData=>{
+    let obj=JSON.parse(responseData)
+    obj[0].balance+=creditedBalance
+    let postObj={userId:obj[0].userId,password:obj[0].password,fullName:obj[0].fullName,
+        acNo:obj[0].acNo,mobileNo:obj[0].mobileNo,debitCard:obj[0].debitCard,
+    creditCard:obj[0].creditCard,balance:obj[0].balance}
+    let jsonString=JSON.stringify(postObj)
+    makeAjaxCall("PUT",`http://localhost:3000/users/${obj[0].id}`,jsonString,false)
+    postObj={userId:userId,acNo:acNo,date:today,amount:amount,transactionId:transactionId(),balance:debitedBalance}
+   jsonString=JSON.stringify(postObj)
+   makeAjaxCall("POST",`http://localhost:3000/transactions`,jsonString,false)
+   window.location="/html/success.html"
+   })
+  }
+}
+}
+        }
+    )
+    //function for setting attributes
+    function setAttributes(el, attrs) {
+  for(var key in attrs) {
+    el.setAttribute(key, attrs[key]);
+  }
+}
+
+</script>
+</html>

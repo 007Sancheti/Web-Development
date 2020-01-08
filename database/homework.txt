@@ -1,0 +1,6 @@
+const and let
+normal and arrow function
+lexical scope
+string and string literals
+generator function
+set and map

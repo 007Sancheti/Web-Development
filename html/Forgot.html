@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Know Your User Id And Pass</title>
+    <link rel="stylesheet" type="text/css" href="../css/Registeration.css">
+    <!-- <script src="https://smtpjs.com/v3/smtp.js"></script> -->
+    <script src="../js/makeAjaxCall.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <form class="form" onsubmit="_submit(event)">
+            <h1>Farzi Bank</h1>
+            <h4>Know your User ID</h4>
+            <h4>You are 1 step away from getting your User ID</h4>
+            <div class="credentials">
+                <input type="radio" name="choice" value="acNo" checked>Bank Account</input>
+                <input type="radio" name="choice" value="debitCard">DebitCard</input>
+                <input type="radio" name="choice" value="creditCard">Credit Card</input>
+            </div>
+            <div class="format">
+                <label for="no" id="no">Account Number:</label><input type="text"  onkeypress="isInputNumber(event)" name="no" />
+            </div>
+            <div class="format">
+                <label for="mobileNo">Mobile Number:</label><input type="tel" name="mobileNo" onkeypress="isInputNumber(event)" maxlength="10" minlength="10"/>
+            </div>
+            <button type="submit">Submit</button>
+            <a href="Login-Page.html" class="exist">UserId Already Exists?</a>
+        </form>
+    </div>
+    <script>
+        //Preventing Users From Entering Text In AC no. and Mobile No.
+            function isInputNumber(evt){
+                
+                var ch = String.fromCharCode(evt.which);
+                
+                if(!(/[0-9]/.test(ch))){
+                    evt.preventDefault();
+                }
+                
+            }
+    //Dynamically changing the label name on the basis of user's choice
+        let choices = document.getElementsByName('choice');
+        for (let i = 0; i < choices.length; i++) {
+            choices[i].addEventListener('click', () => {
+                let no = document.getElementById('no')
+                if (choices[i].value == "debitCard") {
+                    no.innerHTML = "Debit Card Number:"
+                }
+                else if (choices[i].value == "creditCard") {
+                    no.innerHTML = "Credit Card Number:"
+                }
+                else {
+                    no.innerHTML = "Account Number:"
+                }
+            })
+        }
+    //_submit() is invoked when user clicks on Submit Button
+        function _submit(event) {
+            event.preventDefault()
+            let validNo = false
+            let validMobileNo = false
+            let choice = "acNo"
+            let no = document.getElementsByName('no')[0].value
+            let mobileNo = document.getElementsByName('mobileNo')[0].value
+            console.log(choices)
+            for (let i = 0; i < choices.length; i++) {
+                if (choices[i].checked) {
+                    choice = choices[i].value
+                    console.log(choice)
+                }
+            }
+            makeAjaxCall("GET", "http://localhost:3000/users", null, false).then(
+                responseData => {
+                    let obj = JSON.parse(responseData)
+                    console.log(obj)
+                    let i
+//Validating that whether user is having existing Account number,debitcard,creditcard or not
+                    for (i = 0; i < obj.length; i++) {
+                        if (choice == "acNo") {
+                            if (obj[i].acNo == no) {
+                                
+                                validNo = true
+                            }
+                        }
+                        else if (choice == "debitCard") {
+                            if (obj[i].debitCard == no) {
+                                
+                                validNo = true
+                            }
+
+                        }
+                        else {
+                            if (obj[i].creditCard == no) {
+                                validNo = true
+                            }
+                        }
+                        if (obj[i].mobileNo == mobileNo) {
+                            validMobileNo = true
+                            break;
+                        }
+                    }
+        //If user leaves ac number field empty then alert
+                    if (no == "") {
+                                alert("Please Enter AC Number")
+                            }
+        /*If user is having both valid account number and valid mobile number then
+         fetch his user id and password and store it in session storage
+         and provide him with is id/pass on another page named Id-Pass.html
+         else alert no such account exists */
+                   else if (validMobileNo && validNo) {
+                    makeAjaxCall("GET", `http://localhost:3000/users/${obj[i].id}`,null, false).then
+                    (
+                        responseData=>
+                        {
+                             obj = JSON.parse(responseData)
+                             let id=obj.userId
+                             let pass=obj.password
+                              sessionStorage.setItem("userId",id)
+                        sessionStorage.setItem("password",pass)
+                        window.location.href = `Id-Pass.html`
+                        }
+                    )
+                   }
+                   else{
+                       alert("No Such Account Exists")
+                   }
+                        // let userId = () => {
+                        //     return '_' + Math.random().toString(36).slice(2,8);
+                        // }
+                        // let password = () => {
+                        //     let randomLower = String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+                        //     let randomUpper = String.fromCharCode(Math.floor(Math.random() * 26) + 65);
+                        //     let randomNumber = String.fromCharCode(Math.floor(Math.random() * 10) + 48);
+                        //     let symbols = '!@#$%^&*(){}[]=<>/,.'
+                        //     let randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                        //     let password = randomUpper + randomNumber + randomLower + randomSymbol + randomUpper + randomLower
+                        //     return password
+                        // }
+                    //     let id=userId()
+                    //     let pass=password()
+                    // if(obj[i].userId==undefined)
+                    // {
+                    //     let postObj = {
+                    //         userId:id ,
+                    //         password:pass,
+                    //         acNo: obj[i].acNo,
+                    //         debitCard: obj[i].debitCard,
+                    //         creditCard: obj[i].creditCard,
+                    //         mobileNo: obj[i].mobileNo,
+                    //         balance: obj[i].balance
+                    //     }
+                    //     jsonString = JSON.stringify(postObj)
+                    //     makeAjaxCall("PUT", `http://localhost:3000/users/${obj[i].id}`, jsonString, false)
+                        // sessionStorage.setItem("userId",id)
+                        // sessionStorage.setItem("password",pass)
+        //             }
+        //                 else
+        //                 {
+        //                     alert("User ID already exists")
+        //                 }    
+        //             }
+        //             else
+        //             {
+        //                 alert("Please Check Your Account Number Or Registered Mobile Number")
+        //             }
+                   }
+            )
+    }
+
+        // function sendEmail() {
+        // 		Email.send({
+        // 			Host: "smtp.gmail.com",
+        // 			Username : "007sancheti@gmail.com",
+        // 			Password : "@001Sancheti",
+        // 			To : '001sancheti@gmail.com',
+        // 			From : "007sancheti@gmail.com",
+        // 			Subject : "Hello",
+        // 			Body : "hello",
+        // 		})
+        // 		.then(function(message){
+        // 			alert("mail sent successfully")
+        // 		});
+        // 	}
+        
+    </script>
+</body>
+
+</html>

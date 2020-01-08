@@ -1,0 +1,84 @@
+#container
+{
+width:90%;
+margin: 0px auto;
+}
+table, th, td,tr{
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 10px;
+    font-weight: bolder;
+  }
+  tr{
+      cursor: pointer;
+  }
+  table{
+    width: 100%;
+  }
+  th{
+    color:white;
+    font-weight: bolder;
+    text-align: left;
+    background-color:red;
+  } 
+  tr:nth-child(even) 
+  {
+    background-color: #f2f2f2;
+  }
+  .summary
+  {
+    float: right;
+    cursor: pointer;
+  }
+   .add
+    {
+      border: none;
+      margin-top:10px;
+      height:30px;
+      cursor: pointer;
+      border: 2px solid black;
+      position: relative;
+      left:50%;
+      transform: translateX(-50%);
+      padding: 8px 20px 20px 20px;
+      margin-bottom: 10px;
+      
+    } 
+    .del
+    {
+      cursor: pointer;
+      margin-right: 10px;
+      height: 30px;
+    } 
+    .del:hover{
+      transition:1s ease;
+      transform: rotate(15deg);
+    }
+    .edit
+    {
+      cursor: pointer;
+    }  
+    .edit:hover{
+      transition:1s ease;
+      transform: rotate(-15deg);
+    }      	
+    #confirmBtn
+    {
+      float: right;
+      margin-top: 10px;
+    }
+    .cancel
+    {
+      margin-top: 10px;
+    }
+    .del img
+    {
+      width: 20px;
+    background: none;
+      
+    }
+    .edit img
+    {
+      width: 20px;
+      
+    }

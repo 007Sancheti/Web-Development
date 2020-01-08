@@ -1,0 +1,82 @@
+{
+  "users": [
+    {
+      "userId": "_5ve6il",
+      "password": "je2dm",
+      "fullName": "Soundhar",
+      "acNo": "6242238338",
+      "mobileNo": "8505990353",
+      "debitCard": "",
+      "creditCard": "",
+      "balance": 32130,
+      "id": 1
+    },
+    {
+      "userId": "_5ve4il",
+      "password": "je1dm",
+      "fullName": "radha",
+      "acNo": "6242235338",
+      "mobileNo": "8505993353",
+      "debitCard": "",
+      "creditCard": "",
+      "balance": 114818,
+      "id": 2
+    },
+    {
+      "userId": "_5ve2il",
+      "password": "je34dm",
+      "fullName": "Abhinav",
+      "acNo": "6242235338",
+      "mobileNo": "8505953353",
+      "debitCard": "",
+      "creditCard": "",
+      "balance": 74474,
+      "id": 3
+    }
+  ],
+  "beneficiary": [
+    {
+      "userId": "_5ve6il",
+      "beneficiaryName": "radha N",
+      "acNo": "6242235338",
+      "nickName": "radha",
+      "accountType": "savings",
+      "id": 10
+    },
+    {
+      "userId": "_5ve6il",
+      "beneficiaryName": "Abhinav",
+      "acNo": "6242235338",
+      "nickName": "abhi",
+      "accountType": "savings",
+      "id": 20
+    },
+    {
+      "userId": "_5ve6il",
+      "beneficiaryName": "Abhinav",
+      "acNo": "6242235338",
+      "nickName": "abhi",
+      "accountType": "savings",
+      "id": 30
+    },
+    {
+      "userId": "_5ve6il",
+      "beneficiaryName": "6242238338",
+      "acNo": "6242238338",
+      "nickName": "6242238338",
+      "accountType": "savings",
+      "id": 40
+    }
+  ],
+  "transactions": [
+    {
+      "userId": "_5ve6il",
+      "acNo": "6242235338",
+      "date": "01/07/2020",
+      "amount": "40000",
+      "transactionId": "3rg71jq",
+      "balance": 32130,
+      "id": 1
+    }
+  ]
+}

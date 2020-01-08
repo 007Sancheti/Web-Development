@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login form</title>
+	<link rel="stylesheet" type="text/css" href="../css/Login-Page.css">
+	<script src="../js/makeAjaxCall.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		<form class="form" onsubmit="_login(event)">
+			<h1>Farzi Bank</h1>
+			<h4>Login</h4>
+			<div class="textbox">
+				<input type="text" name="userId" placeholder="User ID"></input>
+			</div>
+			<div class="textbox">
+				<input type="text" name="password" placeholder="Password"></input>
+			</div>
+			<button id="login" type="submit">Login</button>
+			<a href="New-User-Signup.html" class="new">New User?</a>
+			<a href="Forgot.html" class="forgot">Forgot User ID or Pass?</a>
+		</form>
+	</div>
+	<script>
+		//_login() in invoked when user clicks on login button
+		_login = event => {
+			event.preventDefault()
+			//Fetching Data from the database to vaildate him on the basis of his entered information
+			makeAjaxCall("GET", "http://localhost:3000/users", null, false).then(
+				responseData => {
+					let valid = false
+					let userId = document.getElementsByName('userId')[0].value
+					let password = document.getElementsByName('password')[0].value
+					let obj = JSON.parse(responseData)
+					console.log(obj)
+					for (let i = 0; i < obj.length; i++) {
+						if (obj[i].userId == userId && obj[i].password == password) {
+							valid = true
+							const last4Digits = obj[i].acNo.slice(-4);
+							const maskedAcNumber = last4Digits.padStart(obj[i].acNo.length, 'X');
+							console.log(maskedAcNumber);
+		//Storing required Data in session storage which will be used later in a specific user's session 
+							// sessionStorage.setItem("userAcNo", obj[i].acNo)
+							// sessionStorage.setItem("userName", obj[i].fullName)
+							// sessionStorage.setItem("maskedAcNo", maskedAcNumber)
+							// sessionStorage.setItem("userId", obj[i].userId)
+							// sessionStorage.setItem("password", obj[i].password)
+							let obj2 = {userAcNo: obj[i].acNo, userName: obj[i].fullName,maskedAcNo: maskedAcNumber
+								,userId:obj[i].userId}
+                            sessionStorage.setItem('userData', JSON.stringify(obj2))
+						}
+					}
+		/*If validation is successful then navigate to the Account Summary Page
+		else alert user with incorrect id/pass*/
+					if (valid) {
+						alert("validation successful")
+						window.location.href = `Account-Summary.html`;
+					}
+					else {
+						alert("incorrect userid or pass")
+					}
+				}
+			)
+		}
+	</script>
+</body>
+
+</html>

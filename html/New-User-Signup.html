@@ -1,0 +1,108 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <link rel="stylesheet" type="text/css" href="../css/New-User-Signup.css">
+    <!-- <script src="https://smtpjs.com/v3/smtp.js"></script> -->
+    <script src="../js/makeAjaxCall.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <form class="form" onsubmit="_register(event)">
+            <h1>Farzi Bank</h1>
+            <h4>A bank account that's ready in minutes</h4>
+            <h4>Get your account opened instantly</h4>
+            <div class="credentials">
+                <label for="fullName">Full Name</label>
+                <input type="text" name="fullName">
+            </div>
+            <div class="format">
+                <label for="mobileNo">Mobile Number</label><input type="tel" onkeypress="isInputNumber(event)"
+                    name="mobileNo" maxlength="10" minlength="10" />
+            </div>
+            <div class="format">
+                <label for="email" id="email">Email</label><input type="email" name="email" />
+            </div>
+            <button type="submit">Register</button>
+            <a href="Login-Page.html" class="exist">UserId Already Exists?</a>
+        </form>
+    </div>
+    <script>
+        //Preventing User From  Entering Text In Mobile Number Field
+        function isInputNumber(evt) {
+            var ch = String.fromCharCode(evt.which);
+            if (!(/[0-9]/.test(ch))) {
+                evt.preventDefault();
+            }
+        }
+        //_register() Function is invoked when users clicks on that register button 
+        _register = event => {
+            event.preventDefault()
+            let fullName = document.getElementsByName('fullName')[0].value
+            let mobileNo = document.getElementsByName('mobileNo')[0].value
+            let email = document.getElementsByName('email')[0].value
+            let validMobileNo = false
+            //Validating if user has not filled any field
+            if (fullName == "" || mobileNo == "" || email == "") {
+                alert("Please Fill the empty fields")
+                event.preventDefault()
+            }
+
+            /**
+             *  else get the data of existing user from database and check user is having a 
+             *  existing account or not on the basis of his mobile number
+             */
+            else {
+                makeAjaxCall("GET", "http://localhost:3000/users", null, false).then(
+                    responseData => {
+                        let obj = JSON.parse(responseData)
+                        let i
+                        for (i = 0; i < obj.length; i++) {
+                            if (obj[i].mobileNo == mobileNo && obj[i].userId == undefined) {
+                                alert("Generate your user id and pass")
+                                window.location.href = "Forgot.html"
+                            }
+                            else if (obj[i].mobileNo == mobileNo) {
+                                validMobileNo = true
+                            }
+                        }
+                        if (validMobileNo) {
+                            alert("User Already Exists,Please Login")
+                        }
+                        /*if the user is not existing then create his account 
+    and provide him an userId and Password */
+                        else {
+                            let password = () => {
+                                return Math.random().toString(36).slice(2, 7)
+                            }
+                            let userId = () => {
+                                return '_' + Math.random().toString(36).slice(2, 8);
+                            }
+                            let acNo = () => {
+                                let randomNumber = String.fromCharCode(Math.floor(Math.random() * 10) + 48);
+                                return randomNumber
+                            }
+                            let no = acNo() + acNo() + acNo() + acNo() + acNo() + acNo() + acNo() + acNo() + acNo() + acNo();
+                            let id = userId();
+                            let pass = password();
+                            postObj = {
+                                userId: id, password: pass, fullName: fullName, acNo: no, mobileNo: mobileNo, debitCard: "",
+                                creditCard: "", balance: 1000
+                            };
+                            jsonString = JSON.stringify(postObj);
+                            //Posting Users Data Into Database With new Ac No.,UserId,Password and Balance
+                            makeAjaxCall("POST", `http://localhost:3000/users/`, jsonString, false);
+                            window.location.href = "Account-Create.html";
+                            let obj = { userId: id, password: pass }
+                            sessionStorage.setItem('userDetails', JSON.stringify(obj))
+                        }
+                    })
+            }
+        }
+    </script>
+</body>
+
+</html>

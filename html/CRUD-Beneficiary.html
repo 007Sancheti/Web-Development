@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../css/CRUD-Beneficiary.css">
+    <title>Transfer Money</title>
+</head>
+
+<body>
+
+    <div id="container">
+        <h2>Add/Manage Beneficiary <a href="Account-Summary.html"><button class="summary">Home</button></a></h2>
+        <button class="add" onclick="_add(event)">Add </button>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Beneficiary Name</th>
+                    <th>Account No.</th>
+                    <th>Bank Account Type</th>
+                    <th>Nickname</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody class="Data">
+            </tbody>
+        </table>
+        <dialog id="addDialog">
+            <form method="dialog">
+                <div>
+                    <label for="name">Beneficiary Name:</label>
+                    <input type="text" name="name" />
+                </div>
+                <div>
+                    <label for="acNo">Enter account number:</label>
+                    <input type="number" name="acNo" />
+                </div>
+                <div>
+                    <label id="confirmAcNo" for="confirmAcNo">Confirm account number</label>
+                    <input type="number" name="confirmAcNo" />
+                </div>
+                <div>
+                    <label for="nickName">Set a nickname</label>
+                    <input type="text" name="nickName" />
+                </div>
+                <div>
+                    <select class="accountType">
+                        <option value="select">Select account type</option>
+                        <option value="savings">Savings</option>
+                        <option value="current">Current</option>
+                    </select>
+                </div>
+                <button value="cancel" class="cancel">cancel</button>
+                <button value="default" id="confirmBtn1">submit</button>
+            </form>
+        </dialog>
+        <dialog id="editDialog">
+            <form method="dialog">
+                <div>
+                    <label for="name">Beneficiary Name:</label>
+                    <input type="text" name="name" />
+                </div>
+                <div>
+                    <label for="acNo">Enter account number:</label>
+                    <input type="number" name="acNo" />
+                </div>
+                <div>
+                    <label for="nickName">Set a nickname</label>
+                    <input type="text" name="nickName" />
+                </div>
+                <div>
+                    <select class="accountType">
+                        <option value="select">Select account type</option>
+                        <option value="savings">Savings</option>
+                        <option value="current">Current</option>
+                    </select>
+                </div>
+                <button value="cancel" class="cancel">cancel</button>
+                <button value="default" id="confirmBtn2">submit</button>
+            </form>
+        </dialog>
+    </div>
+    <script src="../js/makeAjaxCall.js"></script>
+    <script>
+            setAttributes=(el, attrs)=> {
+  for(var key in attrs) {
+    el.setAttribute(key, attrs[key]);
+  }
+}
+        //Fetch and display list of beneficiaries added by user  
+        let userData=JSON.parse(sessionStorage.getItem('userData'))
+        let userId = userData.userId
+        makeAjaxCall("GET", `http://localhost:3000/beneficiary?userId=${userId}`, null, true).then(
+            responseData => {
+                let obj = JSON.parse(responseData)
+                for (let i = 0; i < obj.length; i++) {
+                    let tr = document.createElement('tr')
+                    tr.setAttribute("onmouseover", "ChangeColor(this,true)")
+                    tr.setAttribute("onmouseout", "ChangeColor(this,false)")
+                    let beneficiaryName = document.createElement('td')
+                    let accountNo = document.createElement('td')
+                    let accountType = document.createElement('td')
+                    let nickname = document.createElement('td')
+                    let actions = document.createElement('td')
+                    tr.appendChild(beneficiaryName)
+                    tr.appendChild(accountNo)
+                    tr.appendChild(accountType)
+                    tr.appendChild(nickname)
+                    let del = document.createElement('button')
+                    let edit = document.createElement('button')
+                    setAttributes(beneficiaryName,{"id":obj[i].id,"onclick":"fundTransfer(event)"})
+                    setAttributes(accountType,{"id":obj[i].id,"onclick":"fundTransfer(event)"})
+                    setAttributes(accountNo,{"id":obj[i].id,"onclick":"fundTransfer(event)"})
+                    setAttributes(nickname,{"id":obj[i].id,"onclick":"fundTransfer(event)"})
+                    setAttributes(del,{"id":obj[i].id,"onclick":"_del(event)"})
+                    setAttributes(edit,{"id":obj[i].id,"onclick":"_edit(event)"})
+                    actions.setAttribute("id", obj[i].id)
+                    // del.innerHTML = `<img src="../images/1.png" alt="delete" title="delete"/>`;
+                    delImage=document.createElement('img')
+                    del.appendChild(delImage)
+                    setAttributes(delImage,{"title":"delete","src":"../images/1.png","alt":"delete"})
+                    // edit.innerHTML = `<img src="../images/2.png" alt="edit" title="edit"/>`
+                    editImage=document.createElement('img')
+                    edit.appendChild(editImage)
+                    setAttributes(editImage,{"title":"edit","src":"../images/2.png","alt":"edit"})
+                    tr.appendChild(actions)
+                    actions.appendChild(del)
+                    actions.appendChild(edit)
+                    del.setAttribute("class", "del")
+                    edit.setAttribute("class", "edit")
+                    beneficiaryName.appendChild(document.createTextNode(obj[i].beneficiaryName))
+                    accountNo.appendChild(document.createTextNode(obj[i].acNo))
+                    accountType.appendChild(document.createTextNode(obj[i].accountType))
+                    nickname.appendChild(document.createTextNode(obj[i].nickName))
+                    let data = document.querySelector(".Data")
+                    data.appendChild(tr)
+                }
+                //If no beneficiary is there then display no beneficiary added
+                if (obj.length == 0) {
+                    let tr = document.createElement('tr')
+                    let info = document.createElement('td')
+                    tr.appendChild(info)
+                    info.appendChild(document.createTextNode("No Beneficiaries Added"))
+                    info.setAttribute("colspan", "5")
+                    let data = document.querySelector(".Data")
+                    data.appendChild(tr)
+                }
+            })
+        //Adding Beneficiary Starts Here
+        _add = event => {
+            document.querySelector('#addDialog').showModal()
+            var confirmBtn = document.querySelector('#confirmBtn1')
+            //on clicking confirm button this fuction will work
+            confirmBtn.addEventListener('click', e => {
+                let name = document.getElementsByName('name')[0].value
+                let acNo = document.getElementsByName('acNo')[0].value
+                let confirmAcNo = document.getElementsByName('confirmAcNo')[0].value
+                let nickName = document.getElementsByName('nickName')[0].value
+                let accountType = document.getElementsByClassName('accountType')[0].value
+                //Validating account number with confirm account number
+                if (acNo != confirmAcNo) {
+                    e.preventDefault()
+                    alert("Account number does not match!")
+                }
+                else {
+                    let acNoValid = false
+                    makeAjaxCall("GET", `http://localhost:3000/users`, null, false).then(
+                        responseData => {
+                            let obj = JSON.parse(responseData)
+                            for (i = 0; i < obj.length; i++) {
+                                if (acNo == obj[i].acNo) {
+                                    acNoValid = true
+                                    let obj = { userId: userId, beneficiaryName: name, acNo: acNo, nickName: nickName, accountType: accountType }
+                                    let jsonString = JSON.stringify(obj)
+                                    makeAjaxCall("POST", "http://localhost:3000/beneficiary", jsonString, false)
+                                }
+                            }
+                            //Validation for correct Account Number as user cannot add beneficiary with wrong Account Number
+                            if (!acNoValid) {
+                                e.preventDefault()
+                                alert("Please Enter Correct Account Number")
+                            }
+                        })
+                }
+
+
+            })
+        }
+        //Deleting Beneficiary Starts Here
+        _del = e => {
+            // debugger;
+            let id = e.target.id
+            if (e.target.id == "") {
+                id = e.target.parentNode.id
+            }
+            makeAjaxCall("delete", `http://localhost:3000/beneficiary/${parseInt(id)}`, null, true)
+
+        }
+        //Editing Beneficiary 
+        _edit = event => {
+            let id = event.target.id
+            if (event.target.id == "") {
+                id = event.target.parentNode.id
+            }
+            //Getting Data On the basis of selected row id for auto-populating fields
+            makeAjaxCall("GET", `http://localhost:3000/beneficiary?id=${parseInt(id)}`, null, true).then
+                (
+                    responseData => {
+                        obj = JSON.parse(responseData)
+                        //Auto-Populating fields
+                        document.getElementsByName('name')[1].value = obj[0].beneficiaryName
+                        document.getElementsByName('acNo')[1].value = obj[0].acNo
+                        document.getElementsByClassName('accountType')[1].value = obj[0].accountType
+                        document.getElementsByName('nickName')[1].value = obj[0].nickName
+                        document.querySelector('#editDialog').showModal()
+                        var confirmBtn = document.querySelector('#confirmBtn2')
+                        //on clicking confirm button this fuction will work
+                        confirmBtn.addEventListener('click', e => {
+                            let name = document.getElementsByName('name')[1].value
+                            let acNo = document.getElementsByName('acNo')[1].value
+                            let accountType = document.getElementsByClassName('accountType')[1].value
+                            let nickName = document.getElementsByName('nickName')[1].value
+                            let acNoValid = false
+                            makeAjaxCall("GET", `http://localhost:3000/users`, null, false).then(
+                                responseData => {
+                                    let obj = JSON.parse(responseData)
+                                    for (i = 0; i < obj.length; i++) {
+                                        if (acNo == obj[i].acNo) {
+                                            acNoValid = true
+                                            postObj = { userId: userId, beneficiaryName: name, acNo: acNo, nickName: nickName, accountType: accountType }
+                                            let jsonString = JSON.stringify(postObj)
+                                            makeAjaxCall("PUT", `http://localhost:3000/beneficiary/${parseInt(id)}`, jsonString, true)
+
+                                        }
+                                    }
+                                    if (!acNoValid) {
+                                        e.preventDefault()
+                                        alert("Please Enter Correct Account Number")
+                                    }
+                                })
+                        })
+                    }
+                )
+        }
+        //End of Edit Function
+
+        //Highlighting row on mouseover
+        ChangeColor = (tableRow, highLight) => {
+            if (highLight) {
+                tableRow.style.backgroundColor = '#dcfac9';
+            }
+            else {
+                tableRow.style.backgroundColor = 'white';
+            }
+        }
+        //End of ChangeColor
+
+        //clicking on any row will trigger this fundTransfer function
+        fundTransfer = event => {
+            let id = event.target.id
+            //getting and storing data into session storage of selected beneficiary and navigating to send-money page
+            makeAjaxCall("GET", `http://localhost:3000/beneficiary?id=${parseInt(id)}`, null, true).then
+                (
+                    responseData => {
+                        let obj = JSON.parse(responseData)
+                        let obj2 = {beneficiaryName:obj[0].beneficiaryName,acNo: obj[0].acNo,accountType: obj[0].accountType
+								,nickName:obj[0].nickName,id:obj[0].id}
+                            sessionStorage.setItem('beneficiaryData', JSON.stringify(obj2))
+                        // sessionStorage.setItem("beneficiaryName", obj[0].beneficiaryName)
+                        // sessionStorage.setItem("acNo", obj[0].acNo)
+                        // sessionStorage.setItem("accountType", obj[0].accountType)
+                        // sessionStorage.setItem("nickName", obj[0].nickName)
+                        // sessionStorage.setItem("id", obj[0].id)
+                        window.location.href = `Send-Money.html`
+                    })
+
+        }
+    </script>
+
+</body>
+
+
+</html>
